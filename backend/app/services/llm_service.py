@@ -11,7 +11,7 @@ class LLMService:
             raise ValueError("GEMINI_API_KEY must be set in environment variables")
         
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.0-flash') # Use a fast, capable model
 
     async def generate_content(self, prompt: str) -> str:
         """Generate content based on a prompt"""
@@ -24,21 +24,28 @@ class LLMService:
     async def generate_section_content(self, section_title: str, document_topic: str, document_type: str) -> str:
         """Generate content for a specific section"""
         if document_type == "docx":
-            prompt = f"""You are writing a section for a professional Word document about "{document_topic}".
-            
-Section Title: {section_title}
+            prompt = f"""Topic: "{document_topic}"
+Section Title: "{section_title}"
 
-Write detailed, well-structured content for this section. Use professional language and include relevant details.
-The content should be around 150-200 words. Format with paragraphs as needed.
+Task: Write the content for this specific section.
+
+Guidelines:
+1. Do NOT start with the Section Title. Dive straight into the content.
+2. Use professional, business-standard English.
+3. Use Markdown for formatting (bolding key terms, bullet points).
+4. Aim for ~150 words unless the topic requires less.
 
 Content:"""
         else:  # pptx
-            prompt = f"""You are creating content for a PowerPoint slide about "{document_topic}".
-            
-Slide Title: {section_title}
+            prompt = f"""Topic: "{document_topic}"
+Slide Title: "{section_title}"
 
-Create concise, impactful bullet points for this slide. Use 3-5 bullet points.
-Each bullet should be clear and to the point. Keep it professional.
+Task: Create content for this PowerPoint slide.
+
+Guidelines:
+1. Provide 3-5 concise, impactful bullet points.
+2. Do NOT repeat the slide title.
+3. Keep it brief and readable for a presentation.
 
 Content:"""
         
@@ -46,33 +53,37 @@ Content:"""
 
     async def refine_content(self, current_content: str, refinement_instruction: str) -> str:
         """Refine existing content based on user instruction"""
-        prompt = f"""Current content:
+        prompt = f"""You are a professional editor.
+
+Original Text:
 {current_content}
 
-User instruction: {refinement_instruction}
+User Instruction: {refinement_instruction}
 
-Please rewrite the content according to the user's instruction while maintaining professional quality.
+Task: Rewrite the Original Text to strictly follow the User Instruction.
+Rules:
+1. Return ONLY the rewritten text.
+2. Do not add conversational filler (e.g., "Here is the refined text").
+3. Maintain professional formatting (Markdown).
 
-Refined content:"""
+Rewritten Text:"""
         
         return await self.generate_content(prompt)
 
     async def generate_outline(self, topic: str, document_type: str, num_sections: int = 5) -> list[str]:
         """Generate an outline/structure for a document"""
         if document_type == "docx":
-            prompt = f"""Create an outline for a professional Word document about "{topic}".
+            prompt = f"""Create a professional outline for a Word document about "{topic}".
             
 Generate exactly {num_sections} section titles.
-Each section should be clear and descriptive.
-Return only the section titles, one per line, without numbering.
+Return ONLY the titles, one per line. Do not use numbering (1., 2.) or bullets.
 
 Section titles:"""
         else:  # pptx
-            prompt = f"""Create slide titles for a professional PowerPoint presentation about "{topic}".
+            prompt = f"""Create an outline of slide titles for a PowerPoint presentation about "{topic}".
             
-Generate exactly {num_sections} slide titles.
-Each slide title should be clear and engaging.
-Return only the slide titles, one per line, without numbering.
+Generate exactly {num_sections} titles.
+Return ONLY the titles, one per line. Do not use numbering.
 
 Slide titles:"""
         
