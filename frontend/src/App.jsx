@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import { AuthProvider, useAuth } from './AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -12,8 +13,8 @@ function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     )
   }
@@ -29,6 +30,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster position="top-center" richColors />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

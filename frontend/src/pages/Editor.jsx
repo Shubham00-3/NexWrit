@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api'
-import { ArrowLeft, Sparkles, Download, Loader, FileText } from 'lucide-react'
+import { ArrowLeft, Save, Download, Wand2, RefreshCw, MoreVertical, Check } from 'lucide-react'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
+import { Skeleton } from '../components/ui/Skeleton'
+import { toast } from 'sonner'
 
 export default function Editor() {
     const { projectId } = useParams()
@@ -9,69 +13,76 @@ export default function Editor() {
     const [project, setProject] = useState(null)
     const [sections, setSections] = useState([])
     const [loading, setLoading] = useState(true)
-    const [generatingId, setGeneratingId] = useState(null)
-    const [refiningId, setRefiningId] = useState(null)
-    const [refinementPrompts, setRefinementPrompts] = useState({})
+    const [generating, setGenerating] = useState({})
+    const [refining, setRefining] = useState({})
+    const [refineInput, setRefineInput] = useState({})
 
     useEffect(() => {
-        loadProject()
+        loadProjectData()
     }, [projectId])
 
-    const loadProject = async () => {
+    const loadProjectData = async () => {
         try {
-            const [projectRes, sectionsRes] = await Promise.all([
+            const [projRes, sectRes] = await Promise.all([
                 api.get(`/projects/${projectId}`),
                 api.get(`/projects/${projectId}/sections`)
             ])
-            setProject(projectRes.data)
-            setSections(sectionsRes.data)
+            setProject(projRes.data)
+            setSections(sectRes.data.sort((a, b) => a.order_index - b.order_index))
         } catch (error) {
-            alert('Failed to load project: ' + (error.response?.data?.detail || error.message))
+            console.error('Failed to load project:', error)
+            toast.error('Failed to load project data')
         } finally {
             setLoading(false)
         }
     }
 
-    const generateContent = async (sectionId) => {
-        setGeneratingId(sectionId)
+    const handleGenerate = async (sectionId) => {
+        setGenerating(prev => ({ ...prev, [sectionId]: true }))
         try {
-            const response = await api.post(`/generate/section/${sectionId}`, {
-                section_id: sectionId
-            })
-            // Update section in state
-            setSections(sections.map(s => s.id === sectionId ? response.data : s))
+            const response = await api.post(`/generate/section/${sectionId}`)
+            updateSectionContent(sectionId, response.data.content)
+            toast.success('Content generated successfully')
         } catch (error) {
-            alert('Failed to generate content: ' + (error.response?.data?.detail || error.message))
+            console.error('Generation failed:', error)
+            toast.error('Failed to generate content')
         } finally {
-            setGeneratingId(null)
+            setGenerating(prev => ({ ...prev, [sectionId]: false }))
         }
     }
 
-    const refineContent = async (sectionId) => {
-        const prompt = refinementPrompts[sectionId]
-        if (!prompt) return
+    const handleRefine = async (sectionId) => {
+        if (!refineInput[sectionId]) return
 
-        setRefiningId(sectionId)
+        setRefining(prev => ({ ...prev, [sectionId]: true }))
         try {
             const response = await api.post(`/generate/refine/${sectionId}`, {
-                section_id: sectionId,
-                refinement_prompt: prompt
+                instruction: refineInput[sectionId]
             })
-            setSections(sections.map(s => s.id === sectionId ? response.data : s))
-            setRefinementPrompts({ ...refinementPrompts, [sectionId]: '' })
+            updateSectionContent(sectionId, response.data.content)
+            setRefineInput(prev => ({ ...prev, [sectionId]: '' }))
+            toast.success('Content refined successfully')
         } catch (error) {
-            alert('Failed to refine content: ' + (error.response?.data?.detail || error.message))
+            console.error('Refinement failed:', error)
+            toast.error('Failed to refine content')
         } finally {
-            setRefiningId(null)
+            setRefining(prev => ({ ...prev, [sectionId]: false }))
         }
     }
 
-    const exportDocument = async () => {
-        try {
-            const response = await api.get(`/export/${projectId}`, {
-                responseType: 'blob'
-            })
+    const updateSectionContent = (sectionId, content) => {
+        setSections(sections.map(s =>
+            s.id === sectionId ? { ...s, content } : s
+        ))
+    }
 
+    const handleExport = async () => {
+        try {
+            // Trigger download
+            window.open(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export?projectId=${projectId}`, '_blank')
+            // Note: The above is a placeholder if using Supabase Functions. 
+            // Since we have a backend endpoint:
+            const response = await api.get(`/export/${projectId}`, { responseType: 'blob' })
             const url = window.URL.createObjectURL(new Blob([response.data]))
             const link = document.createElement('a')
             link.href = url
@@ -79,116 +90,153 @@ export default function Editor() {
             document.body.appendChild(link)
             link.click()
             link.remove()
+            toast.success('Export started')
         } catch (error) {
-            alert('Failed to export document: ' + (error.response?.data?.detail || error.message))
+            console.error('Export failed:', error)
+            toast.error('Failed to export document')
         }
     }
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-                <Loader className="w-8 h-8 text-primary-500 animate-spin" />
+            <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex items-center justify-center">
+                <div className="space-y-4 w-full max-w-md px-4">
+                    <Skeleton className="h-8 w-3/4 mx-auto" />
+                    <Skeleton className="h-4 w-1/2 mx-auto" />
+                    <div className="space-y-2 pt-8">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </div>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-            {/* Header */}
-            <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => navigate('/dashboard')}
-                                className="btn-secondary flex items-center space-x-2"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                <span>Back</span>
-                            </button>
-                            <div>
-                                <h1 className="text-xl font-bold text-white">{project.title}</h1>
-                                <p className="text-sm text-slate-400">{project.type.toUpperCase()}</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={exportDocument}
-                            className="btn-primary flex items-center space-x-2"
-                        >
-                            <Download className="w-4 h-4" />
-                            <span>Export</span>
-                        </button>
-                    </div>
+        <div className="min-h-screen bg-zinc-100 dark:bg-zinc-950 flex flex-col">
+            {/* Top Bar */}
+            <header className="h-14 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between px-4 sticky top-0 z-50">
+                <div className="flex items-center space-x-4">
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Dashboard
+                    </Button>
+                    <div className="h-6 w-px bg-zinc-200 dark:bg-zinc-800" />
+                    <h1 className="font-semibold text-sm truncate max-w-[200px] sm:max-w-md">
+                        {project?.title}
+                    </h1>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase tracking-wider font-medium">
+                        {project?.type}
+                    </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" onClick={handleExport}>
+                        <Download className="w-4 h-4 mr-2" /> Export
+                    </Button>
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="space-y-6">
-                    {sections.map((section, index) => (
-                        <div key={section.id} className="card">
-                            <div className="flex items-start justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-white">
-                                    {index + 1}. {section.title}
-                                </h2>
-                                {!section.content && (
-                                    <button
-                                        onClick={() => generateContent(section.id)}
-                                        disabled={generatingId === section.id}
-                                        className="btn-primary flex items-center space-x-2 text-sm"
-                                    >
-                                        <Sparkles className="w-4 h-4" />
-                                        <span>{generatingId === section.id ? 'Generating...' : 'Generate'}</span>
-                                    </button>
-                                )}
+            <div className="flex-1 flex overflow-hidden">
+                {/* Main Editor Area (Paper UI) */}
+                <main className="flex-1 overflow-y-auto p-8 flex justify-center bg-zinc-100 dark:bg-zinc-950/50">
+                    <div className="w-full max-w-[816px] min-h-[1056px] bg-white text-zinc-900 shadow-2xl paper-shadow mb-8 animate-fade-in">
+                        <div className="p-[96px]">
+                            <h1 className="font-serif text-4xl font-bold mb-12 text-center leading-tight">
+                                {project?.title}
+                            </h1>
+
+                            <div className="space-y-12">
+                                {sections.map((section) => (
+                                    <div key={section.id} className="group relative">
+                                        <h2 className="font-serif text-2xl font-bold mb-4 text-zinc-800">
+                                            {section.title}
+                                        </h2>
+
+                                        {section.content ? (
+                                            <div className="font-serif text-lg leading-relaxed text-zinc-700 whitespace-pre-wrap">
+                                                {section.content}
+                                            </div>
+                                        ) : (
+                                            <div className="p-8 border-2 border-dashed border-zinc-200 rounded-lg bg-zinc-50 flex flex-col items-center justify-center text-zinc-400 space-y-2">
+                                                <p className="text-sm italic">No content generated yet</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-
-                            {section.content ? (
-                                <div>
-                                    <div className="bg-slate-700/50 rounded-lg p-4 mb-4">
-                                        <p className="text-slate-200 whitespace-pre-wrap">{section.content}</p>
-                                    </div>
-
-                                    <div className="flex items-end space-x-2">
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium text-slate-300 mb-2">
-                                                Refine with AI
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={refinementPrompts[section.id] || ''}
-                                                onChange={(e) => setRefinementPrompts({
-                                                    ...refinementPrompts,
-                                                    [section.id]: e.target.value
-                                                })}
-                                                onKeyPress={(e) => e.key === 'Enter' && refineContent(section.id)}
-                                                className="input-field"
-                                                placeholder="e.g., Make this more formal, Shorten to 100 words..."
-                                            />
-                                        </div>
-                                        <button
-                                            onClick={() => refineContent(section.id)}
-                                            disabled={refiningId === section.id || !refinementPrompts[section.id]}
-                                            className="btn-primary"
-                                        >
-                                            {refiningId === section.id ? 'Refining...' : 'Refine'}
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : generatingId === section.id ? (
-                                <div className="bg-slate-700/50 rounded-lg p-8 flex items-center justify-center">
-                                    <Loader className="w-6 h-6 text-primary-500 animate-spin" />
-                                </div>
-                            ) : (
-                                <div className="bg-slate-700/30 rounded-lg p-8 text-center">
-                                    <FileText className="w-12 h-12 text-slate-600 mx-auto mb-2" />
-                                    <p className="text-slate-400">No content yet. Click Generate to create content with AI.</p>
-                                </div>
-                            )}
                         </div>
-                    ))}
-                </div>
-            </main>
+                    </div>
+                </main>
+
+                {/* Right Sidebar (Controls) */}
+                <aside className="w-80 border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto">
+                    <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
+                        <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">
+                            Document Sections
+                        </h3>
+                    </div>
+
+                    <div className="p-4 space-y-6">
+                        {sections.map((section, index) => (
+                            <div key={section.id} className="space-y-3 p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+                                <div className="flex items-start justify-between">
+                                    <span className="text-xs font-medium text-muted-foreground bg-zinc-200 dark:bg-zinc-800 px-2 py-1 rounded">
+                                        {index + 1}
+                                    </span>
+                                    {section.content && <Check className="w-4 h-4 text-green-500" />}
+                                </div>
+
+                                <h4 className="font-medium text-sm line-clamp-2" title={section.title}>
+                                    {section.title}
+                                </h4>
+
+                                <div className="space-y-2 pt-2">
+                                    {!section.content ? (
+                                        <Button
+                                            size="sm"
+                                            className="w-full"
+                                            onClick={() => handleGenerate(section.id)}
+                                            loading={generating[section.id]}
+                                        >
+                                            <Wand2 className="w-3 h-3 mr-2" /> Generate Content
+                                        </Button>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    placeholder="Refine instruction..."
+                                                    className="h-8 text-xs"
+                                                    value={refineInput[section.id] || ''}
+                                                    onChange={(e) => setRefineInput(prev => ({ ...prev, [section.id]: e.target.value }))}
+                                                />
+                                                <Button
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    className="h-8 w-8 shrink-0"
+                                                    onClick={() => handleRefine(section.id)}
+                                                    loading={refining[section.id]}
+                                                    disabled={!refineInput[section.id]}
+                                                >
+                                                    <RefreshCw className="w-3 h-3" />
+                                                </Button>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="w-full text-xs h-6 text-muted-foreground"
+                                                onClick={() => handleGenerate(section.id)}
+                                                loading={generating[section.id]}
+                                            >
+                                                Regenerate Completely
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </aside>
+            </div>
         </div>
     )
 }

@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import api from '../api'
-import { FileText, Plus, LogOut, FileSpreadsheet, Loader } from 'lucide-react'
+import { FileText, Plus, LogOut, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { Button } from '../components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card'
+import { toast } from 'sonner'
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([])
@@ -20,104 +23,109 @@ export default function Dashboard() {
             setProjects(response.data)
         } catch (error) {
             console.error('Failed to load projects:', error)
+            toast.error('Failed to load projects')
         } finally {
             setLoading(false)
         }
     }
 
     const handleSignOut = async () => {
-        await signOut()
-        navigate('/login')
+        try {
+            await signOut()
+            navigate('/login')
+            toast.success('Signed out successfully')
+        } catch (error) {
+            toast.error('Failed to sign out')
+        }
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="min-h-screen bg-background text-foreground">
             {/* Header */}
-            <header className="border-b border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+            <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                            <div className="bg-primary-600 p-2 rounded-lg">
-                                <FileText className="w-6 h-6 text-white" />
+                            <div className="bg-primary/10 p-2 rounded-lg">
+                                <FileText className="w-6 h-6 text-primary" />
                             </div>
-                            <h1 className="text-2xl font-bold text-white">NexWrit</h1>
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent">
+                                NexWrit
+                            </h1>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <span className="text-slate-400">{user?.email}</span>
-                            <button
+                            <span className="text-sm text-muted-foreground hidden sm:inline-block">{user?.email}</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={handleSignOut}
-                                className="btn-secondary flex items-center space-x-2"
+                                className="text-muted-foreground hover:text-foreground"
                             >
-                                <LogOut className="w-4 h-4" />
-                                <span>Sign Out</span>
-                            </button>
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Sign Out
+                            </Button>
                         </div>
                     </div>
                 </div>
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="flex items-center justify-between mb-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                     <div>
-                        <h2 className="text-3xl font-bold text-white mb-2">My Projects</h2>
-                        <p className="text-slate-400">Create and manage your AI-powered documents</p>
+                        <h2 className="text-3xl font-bold tracking-tight">My Projects</h2>
+                        <p className="text-muted-foreground mt-1">Manage your AI-powered documents</p>
                     </div>
-                    <button
-                        onClick={() => navigate('/config')}
-                        className="btn-primary flex items-center space-x-2"
-                    >
-                        <Plus className="w-5 h-5" />
-                        <span>New Project</span>
-                    </button>
                 </div>
 
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader className="w-8 h-8 text-primary-500 animate-spin" />
-                    </div>
-                ) : projects.length === 0 ? (
-                    <div className="card text-center py-12">
-                        <div className="flex justify-center mb-4">
-                            <FileText className="w-16 h-16 text-slate-600" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-white mb-2">No projects yet</h3>
-                        <p className="text-slate-400 mb-6">Get started by creating your first document</p>
-                        <button
-                            onClick={() => navigate('/config')}
-                            className="btn-primary inline-flex items-center space-x-2"
-                        >
-                            <Plus className="w-5 h-5" />
-                            <span>Create Project</span>
-                        </button>
+                        <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* New Project Card */}
+                        <button
+                            onClick={() => navigate('/config')}
+                            className="group relative flex flex-col items-center justify-center h-[200px] rounded-xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
+                        >
+                            <div className="p-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors mb-4">
+                                <Plus className="w-8 h-8 text-primary" />
+                            </div>
+                            <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">Create New Project</h3>
+                            <p className="text-sm text-muted-foreground mt-1">Start from scratch or AI template</p>
+                        </button>
+
+                        {/* Project Cards */}
                         {projects.map((project) => (
-                            <div
+                            <Card
                                 key={project.id}
                                 onClick={() => navigate(`/editor/${project.id}`)}
-                                className="card hover:border-primary-500 transition-all cursor-pointer group"
+                                className="h-[200px] cursor-pointer hover:border-primary/50 hover:shadow-lg group relative overflow-hidden"
                             >
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="bg-primary-600/20 p-3 rounded-lg group-hover:bg-primary-600/30 transition-colors">
-                                        {project.type === 'docx' ? (
-                                            <FileText className="w-6 h-6 text-primary-400" />
-                                        ) : (
-                                            <FileSpreadsheet className="w-6 h-6 text-primary-400" />
-                                        )}
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <CardHeader>
+                                    <div className="flex items-start justify-between">
+                                        <div className={`p-2 rounded-lg ${project.type === 'docx' ? 'bg-blue-500/10 text-blue-500' : 'bg-orange-500/10 text-orange-500'
+                                            }`}>
+                                            {project.type === 'docx' ? (
+                                                <FileText className="w-5 h-5" />
+                                            ) : (
+                                                <FileSpreadsheet className="w-5 h-5" />
+                                            )}
+                                        </div>
+                                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary text-secondary-foreground">
+                                            {project.status || 'Draft'}
+                                        </span>
                                     </div>
-                                    <span className="text-xs text-slate-500 uppercase tracking-wider">
-                                        {project.type}
-                                    </span>
-                                </div>
-                                <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
-                                    {project.title}
-                                </h3>
-                                <p className="text-sm text-slate-400">
-                                    {new Date(project.created_at).toLocaleDateString()}
-                                </p>
-                            </div>
+                                    <CardTitle className="mt-4 line-clamp-1 group-hover:text-primary transition-colors">
+                                        {project.title}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Last updated {new Date(project.updated_at || project.created_at).toLocaleDateString()}
+                                    </CardDescription>
+                                </CardHeader>
+                            </Card>
                         ))}
                     </div>
                 )}
