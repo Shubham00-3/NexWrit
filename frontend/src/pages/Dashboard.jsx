@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button'
 import { Card, CardHeader, CardContent } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { toast } from 'sonner'
+import { Logo } from '../components/Logo'
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([])
@@ -50,11 +51,8 @@ export default function Dashboard() {
             <header className="sticky top-0 z-50 w-full border-b border-zinc-800/50 bg-zinc-950/70 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-primary/10 ring-1 ring-primary/20">
-                                <FileText className="w-5 h-5 text-primary" />
-                            </div>
-                            <span className="text-lg font-bold text-white tracking-tight">NexWrit</span>
+                        <div onClick={() => navigate('/dashboard')} className="cursor-pointer transition-opacity hover:opacity-80">
+                            <Logo />
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800/50">

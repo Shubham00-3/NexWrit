@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Card, CardContent, CardFooter } from '../components/ui/Card'
 import { toast } from 'sonner'
+import { Logo } from '../components/Logo'
 
 export default function Register() {
     const [email, setEmail] = useState('')
@@ -37,12 +38,12 @@ export default function Register() {
             <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
 
             <div className="w-full max-w-md px-4 z-10 animate-fade-in">
-                <div className="flex flex-col items-center mb-8 space-y-2">
-                    <div className="p-3 rounded-2xl bg-primary/10 ring-1 ring-primary/20 mb-2">
-                        <FileText className="w-8 h-8 text-primary" />
+                <div className="flex flex-col items-center mb-8 space-y-4">
+                    <Logo size="large" />
+                    <div className="text-center space-y-1.5">
+                        <h1 className="text-2xl font-bold tracking-tight text-white">Create an account</h1>
+                        <p className="text-zinc-400 text-sm">Enter your details to get started</p>
                     </div>
-                    <h1 className="text-3xl font-bold tracking-tight text-white">Create an account</h1>
-                    <p className="text-zinc-400">Enter your details to get started</p>
                 </div>
 
                 <Card className="border-zinc-800 shadow-2xl">
