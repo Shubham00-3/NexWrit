@@ -61,3 +61,6 @@ class GenerateOutlineRequest(BaseModel):
 
 class GenerateOutlineResponse(BaseModel):
     sections: List[str]
+
+class FeedbackCreate(BaseModel):
+    is_positive: bool
