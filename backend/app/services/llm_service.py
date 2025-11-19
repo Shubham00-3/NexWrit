@@ -1,5 +1,7 @@
 import os
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,14 +13,48 @@ class LLMService:
             raise ValueError("GEMINI_API_KEY must be set in environment variables")
         
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.0-flash') # Use a fast, capable model
+        
+        # --- NEW: Disable Safety Filters to prevent 500 Errors ---
+        self.safety_settings = {
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+        }
+        
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
+
+    def _clean_response(self, text: str) -> str:
+        """Removes conversational filler from AI response"""
+        lines = text.strip().split('\n')
+        cleaned_lines = []
+        for line in lines:
+            lower_line = line.lower()
+            # Filter out common AI filler phrases
+            if any(phrase in lower_line for phrase in [
+                "here is", "here's", "sure,", "certainly", "concise bullet points", 
+                "content for", "slide:", "output:", "revised text", "in this section"
+            ]):
+                continue
+            cleaned_lines.append(line)
+            
+        return '\n'.join(cleaned_lines).strip()
 
     async def generate_content(self, prompt: str) -> str:
         """Generate content based on a prompt"""
         try:
-            response = self.model.generate_content(prompt)
-            return response.text
+            response = self.model.generate_content(
+                prompt, 
+                safety_settings=self.safety_settings  # <--- Apply settings here
+            )
+            
+            # Check if response was blocked
+            if not response.parts:
+                return "Content generation was blocked by AI safety filters. Please try a different topic."
+                
+            return self._clean_response(response.text)
         except Exception as e:
+            print(f"LLM Generation Error: {str(e)}") # Print error to console for debugging
             raise Exception(f"Error generating content: {str(e)}")
 
     async def generate_section_content(self, section_title: str, document_topic: str, document_type: str) -> str:
@@ -27,72 +63,61 @@ class LLMService:
             prompt = f"""Topic: "{document_topic}"
 Section Title: "{section_title}"
 
-Task: Write the content for this specific section.
-
-Guidelines:
-1. Do NOT start with the Section Title. Dive straight into the content.
-2. Use professional, business-standard English.
-3. Use Markdown for formatting (bolding key terms, bullet points).
-4. Aim for ~150 words unless the topic requires less.
+Task: Write professional content for this section.
+Rules:
+1. Start directly with the content. Do NOT repeat the title.
+2. Do NOT use intro phrases like "Here is the content".
+3. Use **bold** for key terms.
+4. Write 2-3 detailed paragraphs.
 
 Content:"""
         else:  # pptx
             prompt = f"""Topic: "{document_topic}"
 Slide Title: "{section_title}"
 
-Task: Create content for this PowerPoint slide.
-
-Guidelines:
-1. Provide 3-5 concise, impactful bullet points.
-2. Do NOT repeat the slide title.
-3. Keep it brief and readable for a presentation.
+Task: Create 3-5 bullet points for this PowerPoint slide.
+Rules:
+1. Return ONLY the bullet points.
+2. Do NOT use intro phrases.
+3. Do NOT repeat the slide title.
+4. Use **bold** for keywords.
 
 Content:"""
         
         return await self.generate_content(prompt)
 
     async def refine_content(self, current_content: str, refinement_instruction: str) -> str:
-        """Refine existing content based on user instruction"""
-        prompt = f"""You are a professional editor.
-
-Original Text:
+        prompt = f"""Original:
 {current_content}
 
-User Instruction: {refinement_instruction}
+Instruction: {refinement_instruction}
 
-Task: Rewrite the Original Text to strictly follow the User Instruction.
+Task: Rewrite the original text following the instruction.
 Rules:
-1. Return ONLY the rewritten text.
-2. Do not add conversational filler (e.g., "Here is the refined text").
-3. Maintain professional formatting (Markdown).
+1. Return ONLY the rewritten text. NO intro or outro.
+2. Keep professional formatting.
 
-Rewritten Text:"""
+Result:"""
         
         return await self.generate_content(prompt)
 
     async def generate_outline(self, topic: str, document_type: str, num_sections: int = 5) -> list[str]:
-        """Generate an outline/structure for a document"""
         if document_type == "docx":
-            prompt = f"""Create a professional outline for a Word document about "{topic}".
-            
+            prompt = f"""Create a Word document outline about "{topic}".
 Generate exactly {num_sections} section titles.
-Return ONLY the titles, one per line. Do not use numbering (1., 2.) or bullets.
-
-Section titles:"""
-        else:  # pptx
-            prompt = f"""Create an outline of slide titles for a PowerPoint presentation about "{topic}".
-            
-Generate exactly {num_sections} titles.
-Return ONLY the titles, one per line. Do not use numbering.
-
-Slide titles:"""
+Return ONLY the titles, one per line."""
+        else:
+            prompt = f"""Create a PowerPoint presentation outline about "{topic}".
+Generate exactly {num_sections} slide titles.
+Return ONLY the titles, one per line."""
         
         response = await self.generate_content(prompt)
         
-        # Parse response into list
+        # Safe parsing
+        if not response:
+            return ["Introduction", "Overview", "Key Features", "Challenges", "Conclusion"]
+            
         sections = [line.strip() for line in response.split('\n') if line.strip()]
-        
-        # Ensure we have the right number of sections
         return sections[:num_sections]
 
 # Global instance
