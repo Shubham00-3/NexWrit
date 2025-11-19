@@ -1,33 +1,38 @@
-import { FileText, Sparkles } from 'lucide-react'
+import { PenLine } from 'lucide-react'
 
 export const Logo = ({ size = "default" }) => {
     const isLarge = size === "large"
 
-    return (
-        <div className="flex items-center gap-3 select-none">
-            {/* Icon Container */}
-            <div className={`
-                relative flex items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 border border-white/10
-                ${isLarge ? 'w-12 h-12' : 'w-10 h-10'}
-            `}>
-                <FileText className={`${isLarge ? 'w-6 h-6' : 'w-5 h-5'} text-white`} strokeWidth={2.5} />
+    // Sizes
+    const containerSize = isLarge ? 'w-12 h-12' : 'w-9 h-9'
+    const iconSize = isLarge ? 'w-6 h-6' : 'w-4 h-4'
+    const textSize = isLarge ? 'text-3xl' : 'text-xl'
+    const gap = isLarge ? 'gap-4' : 'gap-3'
 
-                {/* Subtle AI Sparkle Badge */}
-                <div className="absolute -top-1 -right-1 bg-zinc-950 rounded-full p-0.5 border border-zinc-800">
-                    <Sparkles className="w-3 h-3 text-amber-300 fill-amber-300" />
-                </div>
+    return (
+        <div className={`flex items-center ${gap} select-none group`}>
+            {/* 1. The Mark: Clean, Gradient, No Badges */}
+            <div className={`
+                relative flex items-center justify-center 
+                ${containerSize}
+                rounded-xl 
+                bg-gradient-to-br from-indigo-500 via-violet-600 to-indigo-700
+                shadow-lg shadow-indigo-500/20
+                ring-1 ring-white/10
+                transition-transform duration-300 group-hover:scale-105
+            `}>
+                {/* A subtle internal glow at the top */}
+                <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-xl" />
+
+                {/* The Icon: PenLine (Writing) implies "Authoring" better than a File */}
+                <PenLine className={`${iconSize} text-white relative z-10`} strokeWidth={2.5} />
             </div>
 
-            {/* Typography */}
-            <div className="flex flex-col">
-                <span className={`font-bold tracking-tight text-white leading-none ${isLarge ? 'text-2xl' : 'text-xl'}`}>
+            {/* 2. The Type: Modern, Tight, Professional */}
+            <div className="flex flex-col justify-center">
+                <span className={`font-bold tracking-tight text-zinc-100 leading-none ${textSize}`}>
                     Nex<span className="text-indigo-400">Writ</span>
                 </span>
-                {isLarge && (
-                    <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest mt-0.5">
-                        AI Editor
-                    </span>
-                )}
             </div>
         </div>
     )
