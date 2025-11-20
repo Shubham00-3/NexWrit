@@ -26,40 +26,44 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+import { ThemeProvider } from './components/ThemeContext'
+
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <Toaster position="top-center" richColors />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/config"
-            element={
-              <ProtectedRoute>
-                <ConfigWizard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/editor/:projectId"
-            element={
-              <ProtectedRoute>
-                <Editor />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-        </Routes>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+          <Toaster position="top-center" richColors />
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/config"
+              element={
+                <ProtectedRoute>
+                  <ConfigWizard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/editor/:projectId"
+              element={
+                <ProtectedRoute>
+                  <Editor />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+          </Routes>
+        </ThemeProvider>
       </AuthProvider>
     </Router>
   )

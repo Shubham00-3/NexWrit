@@ -121,7 +121,7 @@ export default function ConfigWizard() {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 relative flex items-center justify-center p-4">
+        <div className="min-h-screen bg-background relative flex items-center justify-center p-4">
             {/* Background Effects */}
             <div className="fixed inset-0 z-0">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]"></div>
@@ -131,24 +131,24 @@ export default function ConfigWizard() {
             <div className="w-full max-w-4xl relative z-10 animate-slide-up">
                 {/* Steps Indicator */}
                 <div className="mb-8 flex items-center justify-center">
-                    <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${step === 1 ? 'border-primary/50 bg-primary/10 text-primary' : 'border-zinc-800 bg-zinc-900 text-zinc-500'}`}>
+                    <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${step === 1 ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground'}`}>
                         <div className="w-6 h-6 rounded-full flex items-center justify-center border border-current text-xs font-bold">1</div>
                         <span className="text-sm font-medium">Basics</span>
                     </div>
-                    <div className="w-12 h-px bg-zinc-800 mx-2" />
-                    <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${step === 2 ? 'border-primary/50 bg-primary/10 text-primary' : 'border-zinc-800 bg-zinc-900 text-zinc-500'}`}>
+                    <div className="w-12 h-px bg-border mx-2" />
+                    <div className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${step === 2 ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-secondary text-muted-foreground'}`}>
                         <div className="w-6 h-6 rounded-full flex items-center justify-center border border-current text-xs font-bold">2</div>
                         <span className="text-sm font-medium">Structure</span>
                     </div>
                 </div>
 
-                <Card className="border-zinc-800 bg-zinc-900/60 backdrop-blur-xl shadow-2xl overflow-hidden">
+                <Card className="border-border bg-card/60 backdrop-blur-xl shadow-2xl overflow-hidden">
                     <div className="p-8 sm:p-12">
                         {step === 1 ? (
                             <div className="space-y-8 animate-fade-in">
                                 <div className="text-center space-y-2">
-                                    <h2 className="text-3xl font-bold tracking-tight text-white">Start New Project</h2>
-                                    <p className="text-zinc-400">Choose your document type and topic</p>
+                                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Start New Project</h2>
+                                    <p className="text-muted-foreground">Choose your document type and topic</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -156,15 +156,15 @@ export default function ConfigWizard() {
                                         onClick={() => setDocType('docx')}
                                         className={`relative p-6 rounded-xl border-2 transition-all duration-200 flex flex-col items-center space-y-4 group ${docType === 'docx'
                                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                                            : 'border-zinc-800 bg-zinc-900/50 hover:border-primary/50 hover:bg-zinc-800'
+                                            : 'border-border bg-secondary/50 hover:border-primary/50 hover:bg-secondary'
                                             }`}
                                     >
-                                        <div className={`p-4 rounded-full transition-colors ${docType === 'docx' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-400 group-hover:text-blue-400 group-hover:bg-blue-500/10'}`}>
+                                        <div className={`p-4 rounded-full transition-colors ${docType === 'docx' ? 'bg-blue-500/20 text-blue-400' : 'bg-secondary text-muted-foreground group-hover:text-blue-400 group-hover:bg-blue-500/10'}`}>
                                             <FileText className="w-8 h-8" />
                                         </div>
                                         <div className="text-center">
-                                            <h3 className="font-semibold text-lg text-white">Word Document</h3>
-                                            <p className="text-sm text-zinc-500 mt-1">Professional reports & articles</p>
+                                            <h3 className="font-semibold text-lg text-foreground">Word Document</h3>
+                                            <p className="text-sm text-muted-foreground mt-1">Professional reports & articles</p>
                                         </div>
                                     </button>
 
@@ -172,26 +172,26 @@ export default function ConfigWizard() {
                                         onClick={() => setDocType('pptx')}
                                         className={`relative p-6 rounded-xl border-2 transition-all duration-200 flex flex-col items-center space-y-4 group ${docType === 'pptx'
                                             ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                                            : 'border-zinc-800 bg-zinc-900/50 hover:border-primary/50 hover:bg-zinc-800'
+                                            : 'border-border bg-secondary/50 hover:border-primary/50 hover:bg-secondary'
                                             }`}
                                     >
-                                        <div className={`p-4 rounded-full transition-colors ${docType === 'pptx' ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800 text-zinc-400 group-hover:text-orange-400 group-hover:bg-orange-500/10'}`}>
+                                        <div className={`p-4 rounded-full transition-colors ${docType === 'pptx' ? 'bg-orange-500/20 text-orange-400' : 'bg-secondary text-muted-foreground group-hover:text-orange-400 group-hover:bg-orange-500/10'}`}>
                                             <FileSpreadsheet className="w-8 h-8" />
                                         </div>
                                         <div className="text-center">
-                                            <h3 className="font-semibold text-lg text-white">PowerPoint</h3>
-                                            <p className="text-sm text-zinc-500 mt-1">Engaging presentations</p>
+                                            <h3 className="font-semibold text-lg text-foreground">PowerPoint</h3>
+                                            <p className="text-sm text-muted-foreground mt-1">Engaging presentations</p>
                                         </div>
                                     </button>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-sm font-medium text-zinc-300 ml-1">Document Topic / Title</label>
+                                    <label className="text-sm font-medium text-muted-foreground ml-1">Document Topic / Title</label>
                                     <Input
                                         placeholder="e.g., The Future of Artificial Intelligence"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        className="h-12 text-lg bg-zinc-950/50 border-zinc-800 focus:border-primary"
+                                        className="h-12 text-lg bg-background/50 border-border focus:border-primary"
                                     />
                                 </div>
 
@@ -204,8 +204,8 @@ export default function ConfigWizard() {
                         ) : (
                             <div className="space-y-8 animate-fade-in">
                                 <div className="text-center space-y-2">
-                                    <h2 className="text-3xl font-bold tracking-tight text-white">Structure Your Document</h2>
-                                    <p className="text-zinc-400">Define the sections or slides for "{title}"</p>
+                                    <h2 className="text-3xl font-bold tracking-tight text-foreground">Structure Your Document</h2>
+                                    <p className="text-muted-foreground">Define the sections or slides for "{title}"</p>
                                 </div>
 
                                 <div className="flex justify-center">
@@ -220,9 +220,9 @@ export default function ConfigWizard() {
                                     </Button>
                                 </div>
 
-                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar bg-zinc-950/30 p-4 rounded-xl border border-zinc-800/50">
+                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar bg-background/30 p-4 rounded-xl border border-border/50">
                                     {sections.length === 0 && (
-                                        <div className="text-center py-12 text-zinc-500 italic">
+                                        <div className="text-center py-12 text-muted-foreground italic">
                                             No sections yet. Add manually or use AI.
                                         </div>
                                     )}
@@ -232,30 +232,30 @@ export default function ConfigWizard() {
                                                 <button
                                                     onClick={() => moveSection(index, 'up')}
                                                     disabled={index === 0}
-                                                    className="text-zinc-600 hover:text-primary disabled:opacity-30"
+                                                    className="text-muted-foreground hover:text-primary disabled:opacity-30"
                                                 >
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6" /></svg>
                                                 </button>
                                                 <button
                                                     onClick={() => moveSection(index, 'down')}
                                                     disabled={index === sections.length - 1}
-                                                    className="text-zinc-600 hover:text-primary disabled:opacity-30"
+                                                    className="text-muted-foreground hover:text-primary disabled:opacity-30"
                                                 >
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
                                                 </button>
                                             </div>
-                                            <span className="text-xs font-mono text-zinc-500 w-6 text-right">{index + 1}.</span>
+                                            <span className="text-xs font-mono text-muted-foreground w-6 text-right">{index + 1}.</span>
                                             <Input
                                                 value={section.title}
                                                 onChange={(e) => updateSection(index, e.target.value)}
                                                 placeholder={`Section ${index + 1} title`}
-                                                className="bg-zinc-900 border-zinc-800 focus:border-primary"
+                                                className="bg-secondary border-border focus:border-primary"
                                             />
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => removeSection(index)}
-                                                className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+                                                className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
@@ -264,14 +264,14 @@ export default function ConfigWizard() {
                                     <Button
                                         variant="outline"
                                         onClick={addSection}
-                                        className="w-full border-dashed border-zinc-700 bg-transparent hover:border-primary hover:text-primary hover:bg-primary/5 mt-2"
+                                        className="w-full border-dashed border-border bg-transparent hover:border-primary hover:text-primary hover:bg-primary/5 mt-2"
                                     >
                                         <Plus className="w-4 h-4 mr-2" /> Add Section
                                     </Button>
                                 </div>
 
-                                <div className="flex justify-between pt-4 border-t border-zinc-800">
-                                    <Button variant="ghost" onClick={handleBack} className="text-zinc-400 hover:text-white">
+                                <div className="flex justify-between pt-4 border-t border-border">
+                                    <Button variant="ghost" onClick={handleBack} className="text-muted-foreground hover:text-foreground">
                                         <ArrowLeft className="mr-2 w-4 h-4" /> Back
                                     </Button>
                                     <Button onClick={createProject} disabled={loading || sections.length === 0} size="lg">
