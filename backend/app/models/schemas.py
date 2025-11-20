@@ -13,8 +13,8 @@ class ProjectResponse(BaseModel):
     title: str
     type: str
     status: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 # Comment Schemas (Moved up)
 class CommentCreate(BaseModel):
