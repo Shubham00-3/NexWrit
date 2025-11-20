@@ -50,6 +50,19 @@ export default function ConfigWizard() {
         setSections(newSections)
     }
 
+    const moveSection = (index, direction) => {
+        if (direction === 'up' && index === 0) return;
+        if (direction === 'down' && index === sections.length - 1) return;
+
+        const newSections = [...sections];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+        // Swap elements
+        [newSections[index], newSections[targetIndex]] = [newSections[targetIndex], newSections[index]];
+
+        setSections(newSections);
+    }
+
     const generateOutline = async () => {
         setGenerating(true)
         try {
@@ -142,8 +155,8 @@ export default function ConfigWizard() {
                                     <button
                                         onClick={() => setDocType('docx')}
                                         className={`relative p-6 rounded-xl border-2 transition-all duration-200 flex flex-col items-center space-y-4 group ${docType === 'docx'
-                                                ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                                                : 'border-zinc-800 bg-zinc-900/50 hover:border-primary/50 hover:bg-zinc-800'
+                                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                                            : 'border-zinc-800 bg-zinc-900/50 hover:border-primary/50 hover:bg-zinc-800'
                                             }`}
                                     >
                                         <div className={`p-4 rounded-full transition-colors ${docType === 'docx' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-400 group-hover:text-blue-400 group-hover:bg-blue-500/10'}`}>
@@ -158,8 +171,8 @@ export default function ConfigWizard() {
                                     <button
                                         onClick={() => setDocType('pptx')}
                                         className={`relative p-6 rounded-xl border-2 transition-all duration-200 flex flex-col items-center space-y-4 group ${docType === 'pptx'
-                                                ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                                                : 'border-zinc-800 bg-zinc-900/50 hover:border-primary/50 hover:bg-zinc-800'
+                                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                                            : 'border-zinc-800 bg-zinc-900/50 hover:border-primary/50 hover:bg-zinc-800'
                                             }`}
                                     >
                                         <div className={`p-4 rounded-full transition-colors ${docType === 'pptx' ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800 text-zinc-400 group-hover:text-orange-400 group-hover:bg-orange-500/10'}`}>
@@ -215,6 +228,22 @@ export default function ConfigWizard() {
                                     )}
                                     {sections.map((section, index) => (
                                         <div key={index} className="flex items-center gap-3 animate-fade-in group">
+                                            <div className="flex flex-col -space-y-1">
+                                                <button
+                                                    onClick={() => moveSection(index, 'up')}
+                                                    disabled={index === 0}
+                                                    className="text-zinc-600 hover:text-primary disabled:opacity-30"
+                                                >
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6" /></svg>
+                                                </button>
+                                                <button
+                                                    onClick={() => moveSection(index, 'down')}
+                                                    disabled={index === sections.length - 1}
+                                                    className="text-zinc-600 hover:text-primary disabled:opacity-30"
+                                                >
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                                                </button>
+                                            </div>
                                             <span className="text-xs font-mono text-zinc-500 w-6 text-right">{index + 1}.</span>
                                             <Input
                                                 value={section.title}

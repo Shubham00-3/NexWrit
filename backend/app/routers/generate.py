@@ -60,6 +60,13 @@ async def generate_section_content(
             document_type=project["type"]
         )
         
+        # Save generation history
+        supabase.table("section_history").insert({
+            "section_id": section_id,
+            "prompt": "Initial Generation", 
+            "content": content
+        }).execute()
+
         # Update section with generated content
         update_response = supabase.table("sections").update({
             "content": content
@@ -105,6 +112,13 @@ async def refine_section_content(
             refinement_instruction=request.refinement_prompt
         )
         
+        # Save refinement history
+        supabase.table("section_history").insert({
+            "section_id": section_id,
+            "prompt": request.refinement_prompt,
+            "content": refined_content
+        }).execute()
+
         # Update section with refined content
         update_response = supabase.table("sections").update({
             "content": refined_content
