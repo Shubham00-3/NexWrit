@@ -12,7 +12,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/", response_model=List[ProjectResponse])
+@router.get("", response_model=List[ProjectResponse])
 async def get_projects(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Get all projects for authenticated user"""
     user = await verify_token(credentials)
@@ -23,7 +23,7 @@ async def get_projects(credentials: HTTPAuthorizationCredentials = Depends(secur
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     project: ProjectCreate,
     credentials: HTTPAuthorizationCredentials = Depends(security)
