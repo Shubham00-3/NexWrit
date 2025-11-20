@@ -20,7 +20,7 @@ export default function Dashboard() {
 
     const loadProjects = async () => {
         try {
-            const response = await api.get('/projects/')
+            const response = await api.get('/projects')
             setProjects(response.data)
         } catch (error) {
             toast.error('Failed to load projects')

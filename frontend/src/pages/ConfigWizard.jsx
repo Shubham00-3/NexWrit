@@ -97,7 +97,7 @@ export default function ConfigWizard() {
 
         setLoading(true)
         try {
-            const projectRes = await api.post('/projects/', {
+            const projectRes = await api.post('/projects', {
                 title,
                 type: docType
             })
