@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api'
-import { ArrowLeft, Download, Wand2, RefreshCw, Check, ThumbsUp, ThumbsDown, MessageSquare, Save } from 'lucide-react'
+import { ArrowLeft, Download, Wand2, RefreshCw, Check, ThumbsUp, ThumbsDown, MessageSquare, Save, Trash2 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Skeleton } from '../components/ui/Skeleton'
 import { toast } from 'sonner'
 
-// --- Rich Text Renderer (Kept from previous step) ---
+// --- Rich Text Renderer ---
 const RichTextRenderer = ({ content }) => {
     if (!content) return null
 
@@ -134,13 +134,48 @@ export default function Editor() {
         }
     }
 
+    const handleDeleteComment = async (sectionId, commentId) => {
+        try {
+            await api.delete(`/projects/comments/${commentId}`)
+
+            // Update UI immediately by filtering out the deleted comment
+            setSections(sections.map(section => {
+                if (section.id === sectionId) {
+                    return {
+                        ...section,
+                        comments: section.comments.filter(c => c.id !== commentId)
+                    }
+                }
+                return section
+            }))
+
+            toast.success('Note deleted')
+        } catch (error) {
+            toast.error('Failed to delete note')
+        }
+    }
+
     const handleSaveComment = async (sectionId) => {
         if (!commentInput[sectionId]) return
         try {
-            await api.post(`/projects/sections/${sectionId}/comments`, { text: commentInput[sectionId] })
+            // Get the saved comment from backend response
+            const response = await api.post(`/projects/sections/${sectionId}/comments`, { text: commentInput[sectionId] })
+            const newComment = response.data
+
+            // Update local state immediately
+            setSections(sections.map(section => {
+                if (section.id === sectionId) {
+                    return {
+                        ...section,
+                        comments: [...(section.comments || []), newComment]
+                    }
+                }
+                return section
+            }))
+
             toast.success('Note saved')
             setCommentInput(prev => ({ ...prev, [sectionId]: '' }))
-            setShowCommentBox(prev => ({ ...prev, [sectionId]: false }))
+            // Keep the box open so they can see what they typed
         } catch (error) {
             toast.error('Failed to save note')
         }
@@ -239,6 +274,24 @@ export default function Editor() {
                                                 </div>
                                                 <Button size="icon" variant="ghost" className={`h-7 w-7 ${showCommentBox[section.id] ? 'text-primary' : 'text-zinc-500'} hover:text-zinc-300`} onClick={() => setShowCommentBox(prev => ({ ...prev, [section.id]: !prev[section.id] }))}><MessageSquare className="w-3.5 h-3.5" /></Button>
                                             </div>
+
+                                            {/* --- NEW: Comments List --- */}
+                                            {section.comments && section.comments.length > 0 && (
+                                                <div className="space-y-2 mb-3 mt-2 px-1">
+                                                    {section.comments.map((comment) => (
+                                                        <div key={comment.id} className="group flex justify-between items-start gap-2 bg-zinc-950/50 p-2 rounded border border-zinc-800 text-xs text-zinc-300">
+                                                            <p className="break-words flex-1">{comment.text}</p>
+                                                            <button
+                                                                onClick={() => handleDeleteComment(section.id, comment.id)}
+                                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500 hover:text-red-400"
+                                                                title="Delete note"
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
 
                                             {/* Note Input */}
                                             {showCommentBox[section.id] && (

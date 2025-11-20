@@ -16,6 +16,17 @@ class ProjectResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+# Comment Schemas (Moved up)
+class CommentCreate(BaseModel):
+    text: str
+
+class CommentResponse(BaseModel):
+    id: str
+    section_id: str
+    user_id: str
+    text: str
+    created_at: datetime
+
 # Section Schemas
 class SectionCreate(BaseModel):
     title: str
@@ -33,17 +44,7 @@ class SectionResponse(BaseModel):
     content: Optional[str]
     order_index: int
     created_at: datetime
-
-# Comment Schemas
-class CommentCreate(BaseModel):
-    text: str
-
-class CommentResponse(BaseModel):
-    id: str
-    section_id: str
-    user_id: str
-    text: str
-    created_at: datetime
+    comments: List[CommentResponse] = []
 
 # AI Generation Schemas
 class GenerateContentRequest(BaseModel):

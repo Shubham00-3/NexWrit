@@ -98,7 +98,7 @@ async def get_sections(
         raise HTTPException(status_code=404, detail="Project not found")
     
     try:
-        response = supabase.table("sections").select("*").eq("project_id", project_id).order("order_index").execute()
+        response = supabase.table("sections").select("*, comments(*)").eq("project_id", project_id).order("order_index").execute()
         return response.data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -202,5 +202,26 @@ async def add_section_comment(
             "text": comment.text
         }).execute()
         return response.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_comment(
+    comment_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Delete a comment"""
+    user = await verify_token(credentials)
+    
+    try:
+        # Delete the comment if it belongs to the user
+        response = supabase.table("comments").delete().eq("id", comment_id).eq("user_id", user.id).execute()
+        
+        # Check if anything was actually deleted (optional, but good for debugging)
+        if not response.data:
+             # If no data returned, either it didn't exist or it wasn't their comment
+             pass
+             
+        return None
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
