@@ -1040,7 +1040,7 @@ If you encounter issues not covered here:
 1. Check the [FastAPI Documentation](https://fastapi.tiangolo.com/)
 2. Review [Supabase Docs](https://supabase.com/docs)
 3. See [Gemini API Guide](https://ai.google.dev/docs)
-4. Open an issue on GitHub (if repository is public)
+4. Open an issue on GitHub 
 
 ---
 
@@ -1111,9 +1111,9 @@ This project is for **educational purposes** as part of an assignment to demonst
 
 ## 👨‍💻 Author
 
-**Your Name**  
-Email: your.email@example.com  
-GitHub: [@yourusername](https://github.com/yourusername)
+**Shubham Gangwar**  
+Email: shubhamgangwar244@gmail.com
+
 
 Created as a comprehensive demonstration of:
 - Full-stack web development
@@ -1142,8 +1142,7 @@ Created as a comprehensive demonstration of:
 - **Live Application**: https://nex-writ.vercel.app
 - **Backend API**: http://34.224.28.22:8000
 - **API Documentation**: http://34.224.28.22:8000/docs
-- **GitHub Repository**: [Your Repository URL]
-- **Demo Video**: [Video Link]
+
 
 ---
 
