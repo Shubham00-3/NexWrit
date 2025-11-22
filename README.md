@@ -1082,18 +1082,7 @@ This project fulfills all requirements of the AI-Assisted Document Authoring Pla
 | **Frontend** | React + Vite ✅ |
 | **Styling** | TailwindCSS ✅ |
 
-### Submission Components
 
-| Component | Status |
-|-----------|--------|
-| **Source Code Repository** | ✅ GitHub repository |
-| **README.md** | ✅ This comprehensive document |
-| **Environment Variables** | ✅ Documented in setup section |
-| **Run Instructions** | ✅ Detailed in "Running the Application" |
-| **Demo Video** | ✅ 5-10 minute demo covering all features |
-| **Live Deployment** | ✅ Backend (AWS), Frontend (Vercel) |
-
----
 
 ## 📝 License
 
