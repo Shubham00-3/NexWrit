@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import api from '../api'
-import { FileText, Plus, LogOut, FileSpreadsheet, Loader2, Search, Calendar, MoreVertical } from 'lucide-react'
+import { FileText, Plus, LogOut, FileSpreadsheet, Loader2, Search, Calendar, MoreVertical, Trash2 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card, CardHeader, CardContent } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -14,10 +14,17 @@ export default function Dashboard() {
     const [projects, setProjects] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
+    const [activeMenu, setActiveMenu] = useState(null)
     const { user, signOut } = useAuth()
     const navigate = useNavigate()
 
     useEffect(() => { loadProjects() }, [])
+
+    useEffect(() => {
+        const handleClickOutside = () => setActiveMenu(null)
+        document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
+    }, [])
 
     const loadProjects = async () => {
         try {
@@ -37,6 +44,24 @@ export default function Dashboard() {
             toast.success('Signed out successfully')
         } catch (error) {
             toast.error('Failed to sign out')
+        }
+    }
+
+    const handleDeleteProject = async (e, projectId) => {
+        e.stopPropagation()
+        if (!window.confirm('Are you sure you want to delete this project?')) {
+            setActiveMenu(null)
+            return
+        }
+
+        try {
+            await api.delete(`/projects/${projectId}`)
+            setProjects(projects.filter(p => p.id !== projectId))
+            toast.success('Project deleted')
+        } catch (error) {
+            toast.error('Failed to delete project')
+        } finally {
+            setActiveMenu(null)
         }
     }
 
@@ -108,7 +133,31 @@ export default function Dashboard() {
                                     <h3 className="font-bold text-lg text-foreground group-hover:text-primary leading-tight mb-3 line-clamp-2">{project.title}</h3>
                                     <div className="flex items-center justify-between pt-4 border-t border-border">
                                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground"><Calendar className="w-3.5 h-3.5" /><span>{new Date(project.created_at).toLocaleDateString()}</span></div>
-                                        <div className="text-muted-foreground group-hover:text-foreground"><MoreVertical className="w-4 h-4" /></div>
+                                        <div className="relative">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 hover:bg-secondary rounded-full"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setActiveMenu(activeMenu === project.id ? null : project.id)
+                                                }}
+                                            >
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+
+                                            {activeMenu === project.id && (
+                                                <div className="absolute right-0 bottom-full mb-2 w-32 rounded-lg border border-border bg-popover p-1 shadow-lg z-50">
+                                                    <button
+                                                        onClick={(e) => handleDeleteProject(e, project.id)}
+                                                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
